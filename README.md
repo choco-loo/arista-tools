@@ -23,9 +23,9 @@ The idea is to adminster the script using configuration files and loading them, 
 
 This command will load the new configuration, but not apply it. It can then be compared to the running configuration (for preview of changes), or committed to apply the new configuration.
 
-The load command merely prepares a configuration to apply, but does not apply it until committed.
-
-It can read both a plain text configuration file, and a gzip compressed configuration file.
+ - The load command merely prepares a configuration to apply, but does not apply it until committed.
+ - It can read both a plain text configuration file, and a gzip compressed configuration file.
+ - Unlike the native `copy` command, this can negate settings not defined in the new configuration file, akin to Juniper's `load replace`
 
 ### commit
 
