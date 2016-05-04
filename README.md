@@ -1,6 +1,6 @@
 # arista-tools
 
-Coming from a Juniper background, with features like configuration archiving, commit-confirm and rollback - it was alien to use Arista EOS and have no means to undo an incorrect command (short of using out-of-band). So I put together a few tools in the forms of Arista aliases to add the missing functionality.
+Coming from a Juniper background, with features like configuration archiving, `commit-confirm` and `rollback` - it was alien to use Arista EOS and have no means to undo an incorrect command (short of using out-of-band). So I put together a few tools in the forms of Arista aliases to add the missing functionality.
 
 The idea is to adminster the script using configuration files and loading them, rather than editing directory in the configure terminal.
 
@@ -22,6 +22,8 @@ The idea is to adminster the script using configuration files and loading them, 
 This command will load the new configuration, but not apply it. It can then be compared to the running configuration (for preview of changes), or committed to apply the new configuration.
 
 The load command merely prepares a configuration to apply, but does not apply it until committed.
+
+It can read both a plain text configuration file, and a gzip compressed configuration file.
 
     commit
 
