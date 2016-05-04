@@ -1,0 +1,25 @@
+#!/bin/bash
+
+. /mnt/flash/bin/functions
+
+ARCHIVE_RETENTION=30
+
+echo "Saving running config and archiving."
+
+[ ! -d "$CONFIG_ARCHIVE" ] && mkdir -p $CONFIG_ARCHIVE && chmod 770 $CONFIG_ARCHIVE
+
+# Backup and rotate configurations
+while read FILE; do
+    IFS='.' read -ra FILE_PARTS <<< "$FILE"
+    NEW_FILE="$CONFIG_ARCHIVE/arista.conf.$(( ${FILE_PARTS[2]} + 1 )).gz"
+    mv $FILE $NEW_FILE
+done < <(find $CONFIG_ARCHIVE -type f -name "*.gz" | sort -Vr)
+
+# Add current running version
+cli "copy running-config file:$CONFIG_ARCHIVE/arista.conf.0" >/dev/null 2>&1
+sed -i -E '/schedule commit-rollback/d' $CONFIG_ARCHIVE/arista.conf.0 2>/dev/null
+gzip $CONFIG_ARCHIVE/arista.conf.0 2>/dev/null
+
+find $CONFIG_ARCHIVE -type f -name "*.gz" | tail -n+${ARCHIVE_RETENTION} | xargs rm 2>/dev/null
+
+exit 0

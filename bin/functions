@@ -1,0 +1,16 @@
+#!/bin/bash
+
+PATH="$PATH:/mnt/flash/bin"
+
+CONFIG_ARCHIVE="/mnt/flash/config-archive"
+
+function error()
+{
+    echo "$@"
+    exit 0
+}
+
+function cli()
+{
+    FastCli -p15 -c "$@"
+}

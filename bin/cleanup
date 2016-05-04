@@ -1,0 +1,3 @@
+#!/bin/bash
+
+find /var/tmp/config-mgr -mindepth 1 -maxdepth 1 -cmin +180 -exec rm -rf "{}" \;

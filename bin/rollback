@@ -1,0 +1,40 @@
+#!/bin/bash
+
+. /mnt/flash/bin/functions
+
+function usage()
+{
+  cat <<EOF
+$(basename $0) Usage:
+
+$(basename $0) [args]
+
+  -c           Configuration file
+
+EOF
+exit 0
+}
+
+while getopts ":r:t:h" OPTION; do
+  case $OPTION in
+    h)
+      usage
+      ;;
+    r)
+      ROLLBACK_VERSION="$OPTARG"
+      ROLLBACK_FILE="arista.conf.${ROLLBACK_VERSION}.gz"
+      ;;
+    t)
+      COMMIT_TIMEOUT="$OPTARG"
+      ;;
+  esac
+done
+
+COMMIT_TIMEOUT=${COMMIT_TIMEOUT:-0}
+[ -z "$ROLLBACK_VERSION" ] && error "Configuration file must be set"
+[ ! -f "$CONFIG_ARCHIVE/$ROLLBACK_FILE" ] && error "Rollback version ($ROLLBACK_VERSION) doesn't exist"
+
+load -c $CONFIG_ARCHIVE/$ROLLBACK_FILE
+commit -t $COMMIT_TIMEOUT -n
+
+exit 0

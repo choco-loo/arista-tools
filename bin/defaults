@@ -1,0 +1,11 @@
+alias commit bash /mnt/flash/bin/commit -t 0
+alias commit-confirm bash /mnt/flash/bin/commit -t %1
+alias compare bash /mnt/flash/bin/compare
+alias confirm bash /mnt/flash/bin/confirm
+alias load bash /mnt/flash/bin/load -c %1
+alias rollback bash /mnt/flash/bin/rollback -r %1 -t 0
+alias rollback-confirm bash /mnt/flash/bin/rollback -r %1 -t %2
+alias save
+   10 bash /mnt/flash/bin/archive
+   20 write
+schedule cleanup-commit interval 1440 max-log-files 0 command bash /mnt/flash/bin/cleanup

@@ -1,0 +1,52 @@
+#!/bin/bash
+
+. /mnt/flash/bin/functions
+
+function usage()
+{
+  cat <<EOF
+$(basename $0) Usage:
+
+$(basename $0) [args]
+
+  -t           Commit confirm timeout (minutes)
+  -n           No archive
+
+EOF
+exit 0
+}
+
+while getopts ":t:nh" OPTION; do
+  case $OPTION in
+    h)
+      usage
+      ;;
+    t)
+      COMMIT_TIMEOUT="$OPTARG"
+      ;;
+    n)
+      NO_ARCHIVE=1
+      ;;
+  esac
+done
+
+WORKING_DIR="/var/tmp/config-mgr/$PPID"
+DIFF_CLI="$WORKING_DIR/changes-cli"
+
+[ -z "$COMMIT_TIMEOUT" ] && COMMIT_TIMEOUT=0
+[ -f "$DIFF_CLI" ] || echo "No changes found"
+
+cli "copy file:$DIFF_CLI running-config"
+
+if [ $COMMIT_TIMEOUT -gt 0 ]; then
+    echo "Configuration will roll back in ${COMMIT_TIMEOUT}m"
+    #COMMIT_TIMEOUT=$(( COMMIT_TIMEOUT + 1 ))
+    ROLLBACK_DEADLINE=$(date -d "+ $COMMIT_TIMEOUT minute" +%T)
+    cli "configure
+    schedule commit-rollback at ${ROLLBACK_DEADLINE} once max-log-files 0 command bash /mnt/flash/bin/rollback -r 0 -t 0
+    end"
+else
+  [ -z "$NO_ARCHIVE" ] && archive
+fi
+
+exit 0

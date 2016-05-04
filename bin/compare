@@ -1,0 +1,8 @@
+#!/bin/bash
+
+. /mnt/flash/bin/functions
+
+WORKING_DIR="/var/tmp/config-mgr/$PPID"
+DIFF_HUMAN="$WORKING_DIR/changes-human"
+
+[ -f "$DIFF_HUMAN" ] && cat $DIFF_HUMAN || echo "No changes found"

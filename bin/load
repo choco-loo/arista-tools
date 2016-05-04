@@ -1,0 +1,86 @@
+#!/bin/bash
+
+. /mnt/flash/bin/functions
+
+function usage()
+{
+  cat <<EOF
+$(basename $0) Usage:
+
+$(basename $0) [args]
+
+  -c           Configuration file
+
+EOF
+exit 0
+}
+
+while getopts ":c:h" OPTION; do
+  case $OPTION in
+    h)
+      usage
+      ;;
+    c)
+      CONFIG_FILE="$OPTARG"
+      ;;
+  esac
+done
+
+# Create a directory just for this session, so the configs don't get manipulated by any other process
+WORKING_DIR="/var/tmp/config-mgr/$PPID"
+[ ! -d "$WORKING_DIR" ] && mkdir -p $WORKING_DIR && chmod 770 $WORKING_DIR
+
+NEW_CONFIG="$WORKING_DIR/new-config"
+RUNNING_CONFIG="$WORKING_DIR/running-config"
+DIFF_HUMAN="$WORKING_DIR/changes-human"
+DIFF_CLI="$WORKING_DIR/changes-cli"
+
+[ -z "$CONFIG_FILE" ] && error "Configuration file must be set"
+[ ! -f "$CONFIG_FILE" ] && error "Configuration file ($CONFIG_FILE) doesn't exist"
+
+cp $CONFIG_FILE $NEW_CONFIG
+[[ "${CONFIG_FILE##*.}" == "gz" ]] && gzip -dc $CONFIG_FILE > $NEW_CONFIG
+
+# Create a copy of the running configuration for diff purposes
+cli "copy running-config file:$RUNNING_CONFIG" >/dev/null 2>&1
+
+# Remove trailing whitespace
+for FILE in $NEW_CONFIG $RUNNING_CONFIG; do
+  sed -i -E 's/[ \t]+$//g' $FILE
+done
+
+# Create human diff
+diff -up -I '^!.*' $RUNNING_CONFIG $NEW_CONFIG | sed -E '/schedule commit-rollback/d' > $DIFF_HUMAN
+
+# Create CLI diff
+diff -I 'last modified at' \
+--new-line-format='%l
+' \
+--old-line-format='no %l
+' \
+--unchanged-line-format='%l
+' \
+$RUNNING_CONFIG $NEW_CONFIG | \
+sed -E '/^no !$/d; /^$/d; s/^no\s{3}/   no/g;' > $DIFF_CLI
+
+NEGATE_LINE=
+while IFS='' read LINE; do
+    if [[ "$LINE" == "no !"* ]]; then
+        # Skip this line, it is junk from the parser
+        continue
+    elif [[ "$LINE" == "no"* ]]; then
+        # This denontes the start of a group stanza, so the child elements do not need to be set
+        NEGATE_LINE=1
+    elif [ -n "$NEGATE_LINE" ] && [[ "$LINE" == "   "* ]]; then
+        # These are the child elements of a negated group stanza
+        continue
+    else
+        # Reset the negate line
+        NEGATE_LINE=
+    fi
+    echo "$LINE"
+done < $DIFF_CLI > $DIFF_CLI.tmp
+mv $DIFF_CLI{.tmp,}
+
+echo "no schedule commit-rollback" >> $DIFF_CLI
+cat /mnt/flash/bin/defaults >> $DIFF_CLI

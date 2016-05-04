@@ -1,0 +1,9 @@
+#!/bin/bash
+
+. /mnt/flash/bin/functions
+
+cli "configure
+no schedule commit-rollback
+save"
+
+exit 0
