@@ -15,6 +15,8 @@ The idea is to adminster the script using configuration files and loading them, 
 
 ## Usage
 
+### load
+
     load [path to config file]
 
     Eg. load /mnt/flash/new-config
@@ -25,11 +27,15 @@ The load command merely prepares a configuration to apply, but does not apply it
 
 It can read both a plain text configuration file, and a gzip compressed configuration file.
 
+### commit
+
     commit
 
 This is used following the `load` command, to apply the new configuration without confirmation/rollback.
 
 It will create a configuration archive of the current running configuration, so that it can be rolled back if necessary.
+
+### commit-confirm
 
     commit-confirm [minutes]
 
@@ -39,13 +45,19 @@ This is used following the `load` command, to apply the new configuration with c
 
 In the event of misconfiguration that leads to a loss of access, this will restore the previous configuration, allowing you to make changes in production and have them rollback if you don't confirm it.
 
+### confirm
+
     confirm
 
 This command is used following `commit-confirm` to cancel the rollback and commit the new configuration.
 
+### compare
+
     compare
 
 This is used following the `load` command, to compare the current running configuration to the new configuration that has been loaded. It shows a `diff` style output to display the changes that will be applied upon commit.
+
+### rollback
 
     rollback [revision]
 
@@ -55,11 +67,15 @@ This command will load a previous revision of the configuration archive (found i
 
 This command will both load the configuration, and immediately commit it. So if you need to test the difference first, use `rollback-confirm`
 
+### rollback-confirm
+
     rollback-confirm [revision] [minutes]
 
     Eg. rollback-confirm 0 1
 
 This will load the specified revision and `commit-confirm` with the defined timeout. This allows restoration of a previous configuration whilst giving the safety of a rollback if not confirmed.
+
+### save
 
     save
 
