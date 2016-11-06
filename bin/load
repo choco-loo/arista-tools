@@ -82,5 +82,8 @@ while IFS='' read LINE; do
 done < $DIFF_CLI > $DIFF_CLI.tmp
 mv $DIFF_CLI{.tmp,}
 
+# Clean up double negations
+sed -i 's#no no ##g' $DIFF_CLI
+
 echo "no schedule commit-rollback" >> $DIFF_CLI
 cat /mnt/flash/bin/defaults >> $DIFF_CLI
